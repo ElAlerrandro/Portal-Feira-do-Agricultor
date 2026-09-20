@@ -1,0 +1,38 @@
+{
+  "name": "portal-feira-do-agricultor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch back-end/src/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ElAlerrandro/Portal-Feira-do-Agricultor.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ElAlerrandro/Portal-Feira-do-Agricultor/issues"
+  },
+  "homepage": "https://github.com/ElAlerrandro/Portal-Feira-do-Agricultor#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.24.4",
+    "node": "^26.9.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.6.2"
+  }
+}

@@ -1,0 +1,15 @@
+import { Router } from "express";
+import { AdminController } from "../controller/admin.controller";
+import { AdminService } from "../service/admin.service";
+import { AdminDAO } from "../dao/admin.dao";
+
+const adminRoutes = Router();
+const adminDAO = new AdminDAO();
+const adminService = new AdminService(adminDAO);
+const adminController = new AdminController(adminService);
+
+adminRoutes
+    .route('/register')
+    .post(async (req, res) => adminController.register(req,res))
+
+export default adminRoutes;
