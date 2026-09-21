@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch back-end/src/server.ts"
+    "dev": "tsx watch server.ts"
   },
   "repository": {
     "type": "git",
@@ -27,12 +27,14 @@
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.24.4",
     "node": "^26.9.0",
+    "sequelize": "^6.37.8",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^26.6.2"
+    "@types/node": "^26.6.2",
+    "sequelize-cli": "^6.6.5"
   }
 }
