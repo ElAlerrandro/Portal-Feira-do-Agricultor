@@ -1,11 +1,12 @@
 import { AdminCreateDTO } from "../dto/admin.dto";
+import { administratorRole } from "../enums/administrator-role.enum";
 
 export type propsAdmin = {
     id: string;
     name: string;
     email: string;
     password: string;
-    role: string;//temporario, posteriormente alterar para ENUM
+    role: administratorRole;
     active: boolean;
     createdAt: Date;
 }
@@ -13,13 +14,13 @@ export type propsAdmin = {
 export class Admin {
     constructor(private props: propsAdmin) {}
 
-    public static construct({name, email, password, role}: AdminCreateDTO) {
+    public static construct({name, email, password}: AdminCreateDTO) {
         const props: propsAdmin = {
             id: crypto.randomUUID(),
             name,
             email,
             password,
-            role,
+            role: administratorRole.Normal,
             active: true,
             createdAt: new Date()
         }

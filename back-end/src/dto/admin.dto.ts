@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString, IsEmail } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, IsEnum, isString, IsBoolean, IsOptional } from 'class-validator';
+import { administratorRole } from '../enums/administrator-role.enum';
 
 export class AdminCreateDTO {
     @IsNotEmpty()
@@ -13,7 +14,35 @@ export class AdminCreateDTO {
     @IsString()
     password: string;
 
-    @IsNotEmpty()
-    @IsString()//Trocar para ENUM posteriormente
-    role: string;
+    @IsOptional()
+    @IsBoolean()
+    active?: boolean;
+}
+
+export class UpdateOwnProfileDTO {
+    @IsOptional()
+    @IsString()
+    name: string;
+
+    @IsOptional()
+    @IsString()
+    password: string;
+}
+
+export class UpdateAdminByMasterDTO {
+    @IsOptional()
+    @IsString()
+    name: string;
+
+    @IsOptional()
+    @IsEmail()
+    email: string;
+
+    @IsOptional()
+    @IsEnum(administratorRole)
+    role: administratorRole;
+
+    @IsOptional()
+    @IsBoolean()
+    active: boolean;
 }

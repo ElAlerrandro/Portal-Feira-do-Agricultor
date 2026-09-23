@@ -3,7 +3,7 @@ create table `administrators` (
     `name` varchar(255) not null,
     `email` varchar(320) not null,
     `hashPassword` varchar(255) not null,
-    `role` varchar(50) not null,
+    `role` enum('normal', 'master') not null,
     `active` boolean not null,
     `createdAt` date not null,
     primary key (`id`),
@@ -48,15 +48,15 @@ create table `businessInfo` (
     primary key (`id`)
 )engine = InnoDB default CHARSET = utf8mb4 collate = utf8mb4_general_ci;
 
-create table `message` (
+create table `messages` (
     `id` char(36) not null,
     `name` varchar(255) not null,
     `email` varchar(320) not null,
     `phone` varchar(20) default null,
     `subject` enum('doubt', 'suggestion', 'complaint', 'partnership', 'other') not null,
     `message` varchar(1500) not null,
-    `submitDate` date not null,
-    `submitTime` time not null,
+    `submitDate` timestamp not null,
+    `submitTime` timestamp not null,
     primary key (`id`)
 )engine = InnoDB default CHARSET = utf8mb4 collate = utf8mb4_general_ci;
 
@@ -64,9 +64,9 @@ create table `refreshTokens` (
     `id` char(36) not null,
     `adminId` char(36) not null,
     `tokenHash` varchar(255) not null,
-    `createdAt` date not null,
-    `expiresAt` date not null,
-    `revokedAt` date default null,
+    `createdAt` timestamp not null,
+    `expiresAt` timestamp not null,
+    `revokedAt` timestamp default null,
     primary key (`id`),
     key `refreshTokens_administrators_FK` (`adminId`),
     constraint `refreshTokens_administrators_FK` foreign key (`adminId`) references `administrators` (`id`)
