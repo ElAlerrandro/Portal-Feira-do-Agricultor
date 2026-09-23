@@ -12,7 +12,7 @@ const refreshCookieOptions = {
     sameSite: 'lax' as const,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: '/user'
+    path: '/admin'
 };
 
 export class AdminController {
@@ -31,7 +31,7 @@ export class AdminController {
                 return res.status(400).json({errors});
             }
 
-            //Adiconar deopis verificar se o email existe no banco de dados
+            //Adiconar depois verificar se o email existe no banco de dados
 
             await this.adminService.register(adminCreateDTO);
             return res.status(201).json({message: 'Admin registered successfully'});
@@ -79,7 +79,72 @@ export class AdminController {
         }
     }
 
+    public async refresh(req: Request, res: Response) {
+        try{
+            const refreshToken = (req as Request & { cookies?: Record<string, string> }).cookies?.refreshToken;
+            if (!refreshToken) return res.status(401).json({ message: 'Refresh token is missing' });
+
+            if (!process.env.JWT_REFRESH_SECRET) {
+                throw new Error('JWT refresh secret is not configured');
+            }
+
+            const refreshTokenDAO = new RefreshTokenDAO();
+            const storedToken = await refreshTokenDAO.findByToken(refreshToken);
+            if (!storedToken) return res.status(401).json({ message: 'Invalid refresh token' });
+
+            if (new Date(storedToken.expires_at).getTime() < Date.now()) {
+                await refreshTokenDAO.deleteByToken(refreshToken);
+                return res.status(401).json({ message: 'Refresh token has expired' });
+            }
+
+            let payload: any;
+            try {
+                payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+            } catch (error) {
+                await refreshTokenDAO.deleteByToken(refreshToken).catch(() => {});
+                return res.status(401).json({ message: 'Invalid or expired refresh token' });
+            }
+
+            const adminId = payload.adminId;
+            if (!payload.jti || payload.jti !== storedToken.id) {
+                return res.status(401).json({ message: 'Invalid refresh token' })
+            }
+
+            if (!process.env.JWT_ACCESS_SECRET) throw new Error('JWT access secret is not configured');
+            const newAccessToken = jwt.sign({ adminId }, process.env.JWT_ACCESS_SECRET, { expiresIn: '5m' });
+
+            await refreshTokenDAO.deleteByToken(refreshToken);
+            const newRefreshTokenId = crypto.randomUUID();
+            const newRefreshToken = jwt.sign({ adminId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d', jwtid: newRefreshTokenId });
+            const newRefreshExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            await refreshTokenDAO.create(newRefreshTokenId, newRefreshToken, adminId, newRefreshExpiresAt);
+        
+            res.cookie('refreshToken', newRefreshToken, refreshCookieOptions);
+            res.status(200).json({ accessToken: newAccessToken });
+        } catch (error: any) {
+            console.error('Error during token refresh:', error);
+            res.status(500).json({ error: error.message || 'Error during token refresh' });
+        }
+    }
+
+    public async logout(req: Request, res: Response) {
+        try {
+            const refreshToken = (req as Request & { cookies?: Record<string, string> }).cookies?.refreshToken;
+            if (!refreshToken) return res.status(400).json({ message: 'refreshToken is required' });
+
+            const refreshTokenDAO = new RefreshTokenDAO();
+            await refreshTokenDAO.deleteByToken(refreshToken);
+
+            res.clearCookie('refreshToken', { ...refreshCookieOptions, maxAge: undefined });
+            res.status(200).json({ message: 'Logged out successfully' });
+        } catch (error: any) {
+            console.error('Error during logout:', error);
+            res.status(500).json({ error: error.message || 'Error during logout' });
+        }
+    }
+
     public async searchByEmail(email: string) {
         const admin = await this.adminService.searchByEmail(email);
+        return admin;
     }
 }
