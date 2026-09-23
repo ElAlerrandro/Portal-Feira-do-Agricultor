@@ -1,4 +1,3 @@
-import authToken, { requireMaster }  from "../../middleware";
 import { Router } from "express";
 import { AdminController } from "../controller/admin.controller";
 import { AdminService } from "../service/admin.service";
