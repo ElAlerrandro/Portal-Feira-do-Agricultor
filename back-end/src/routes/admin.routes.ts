@@ -12,4 +12,8 @@ adminRoutes
     .route('/register')
     .post(async (req, res) => adminController.register(req,res))
 
+adminRoutes
+    .route('/login')
+    .post(async (req, res) => adminController.login(req,res))
+
 export default adminRoutes;

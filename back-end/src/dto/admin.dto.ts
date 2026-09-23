@@ -17,3 +17,13 @@ export class AdminCreateDTO {
     @IsString()//Trocar para ENUM posteriormente
     role: string;
 }
+
+export class AdminLoginDTO {
+    @IsNotEmpty()
+    @IsEmail()
+    email: string;
+
+    @IsNotEmpty()
+    @IsString()
+    password: string;
+}

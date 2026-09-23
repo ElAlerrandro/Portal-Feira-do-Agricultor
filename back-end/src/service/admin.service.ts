@@ -16,4 +16,12 @@ export class AdminService {
             throw new Error('Error registering admin: ' + error.message);
         }
     }
+
+    public async searchByEmail(email: string): Promise <Admin | null> {
+        const admin: Admin | null = await this.adminDAO.searchByEmail(email);
+        if (admin) {
+            return Admin.reconstruct(admin);
+        }
+        return null;
+    }
 }
