@@ -2,6 +2,7 @@ import { AdminDAO } from "../dao/admin.dao";
 import { AdminCreateDTO } from "../dto/admin.dto";
 import { Admin } from "../model/admin";
 import { PasswordCrypto } from './passwordCrypto';
+import { AdminUpdateData } from '../dao/admin.dao';
 
 export class AdminService {
     public constructor(private adminDAO: AdminDAO) {}
@@ -31,5 +32,25 @@ export class AdminService {
             return Admin.reconstruct(admin);
         }
         return null;
+    }
+
+    public async searchById(id: string): Promise<Admin | null> {
+        const admin = await this.adminDAO.searchById(id);
+        return admin ? Admin.reconstruct(admin) : null;
+    }
+
+    public async update(id: string, data: AdminUpdateData): Promise<void> {
+        if (data.email !== undefined) {
+            const adminWithEmail = await this.searchByEmail(data.email);
+            if (adminWithEmail && adminWithEmail.id !== id) {
+                throw new Error('Email already registered');
+            }
+        }
+
+        if (data.password !== undefined) {
+            data.password = await PasswordCrypto.hashPassword(data.password);
+        }
+
+        await this.adminDAO.update(id, data);
     }
 }

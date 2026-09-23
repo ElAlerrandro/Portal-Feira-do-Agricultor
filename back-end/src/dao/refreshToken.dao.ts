@@ -9,11 +9,11 @@ export type RefreshTokenRow = {
 }
 
 export class RefreshTokenDAO {
-    async create(id: string, token: string, userId: string, expiresAt: Date): Promise<void> {
+    async create(id: string, token: string, adminId: string, expiresAt: Date): Promise<void> {
         try {
             await connection.query(
-                `INSERT INTO refresh_tokens (id, token_hash, user_id, expires_at, created_at) VALUES (?, ?, ?, ?, ?)`,
-                [id, token, userId, expiresAt, new Date()]
+                `INSERT INTO refresh_tokens (id, tokenHash, adminId, expiresAt, createdAt) VALUES (?, ?, ?, ?, ?)`,
+                [id, token, adminId, expiresAt, new Date()]
             );
         } catch (error) {
             console.error('Error creating refresh token:', error);
@@ -23,7 +23,7 @@ export class RefreshTokenDAO {
 
     async findByToken(token: string): Promise<RefreshTokenRow | null> {
         try {
-            const [rows]: any = await connection.query('SELECT id, token_hash, user_id, expires_at, created_at FROM refresh_tokens WHERE token_hash = ?', [token]);
+            const [rows]: any = await connection.query('SELECT id, tokenHash, adminId, expiresAt, createdAt FROM refresh_tokens WHERE tokenHash = ?', [token]);
             if (rows.length === 0) return null;
             return rows[0];
         } catch (error) {
@@ -34,7 +34,7 @@ export class RefreshTokenDAO {
 
     async deleteByToken(token: string): Promise<void> {
         try {
-            await connection.query('DELETE FROM refresh_tokens WHERE token_hash = ?', [token]);
+            await connection.query('DELETE FROM refresh_tokens WHERE tokenHash = ?', [token]);
         } catch (error) {
             console.error('Error deleting refresh token:', error);
             throw new Error('Failed to delete refresh token');
@@ -43,7 +43,7 @@ export class RefreshTokenDAO {
 
     async deleteByUserId(userId: string): Promise<void> {
         try {
-            await connection.query('DELETE FROM refresh_tokens WHERE user_id = ?', [userId]);
+            await connection.query('DELETE FROM refresh_tokens WHERE adminId = ?', [userId]);
         } catch (error) {
             console.error('Error deleting refresh tokens for user:', error);
             throw new Error('Failed to delete refresh tokens for user');

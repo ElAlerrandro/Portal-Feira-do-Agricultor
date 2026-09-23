@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsEmail, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, IsEnum, IsOptional, IsBoolean } from 'class-validator';
 import { AdminRole } from '../model/admin';
 
 export class AdminCreateDTO {
@@ -27,4 +27,27 @@ export class AdminLoginDTO {
     @IsNotEmpty()
     @IsString()
     password: string;
+}
+
+export class AdminUpdateDTO {
+    @IsOptional()
+    @IsNotEmpty()
+    @IsString()
+    name?: string;
+
+    @IsOptional()
+    @IsEmail()
+    email?: string;
+
+    @IsOptional()
+    @IsString()
+    password?: string;
+
+    @IsOptional()
+    @IsEnum(AdminRole)
+    role?: AdminRole;
+
+    @IsOptional()
+    @IsBoolean()
+    active?: boolean;
 }

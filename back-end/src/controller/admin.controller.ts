@@ -2,10 +2,12 @@ import { Request, Response } from 'express';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { PasswordCrypto } from '../service/passwordCrypto'
-import { AdminCreateDTO, AdminLoginDTO } from '../dto/admin.dto';
+import { AdminCreateDTO, AdminLoginDTO, AdminUpdateDTO } from '../dto/admin.dto';
 import { AdminService } from '../service/admin.service';
 import { RefreshTokenDAO } from '../dao/refreshToken.dao';
 import jwt from 'jsonwebtoken';
+import { AdminRole } from '../model/admin';
+import { AuthRequest } from '../../middleware';
 
 const refreshCookieOptions = {
     httpOnly: true,
@@ -61,10 +63,10 @@ export class AdminController {
             }
 
             // Gerar o token de acesso, duração de 5 minutos
-            const accessToken = jwt.sign({ adminId: admin.id}, accessSecret, { expiresIn: '5m' });
+            const accessToken = jwt.sign({ adminId: admin.id, role: admin.role }, accessSecret, { expiresIn: '5m' });
 
             const refreshTokenId = crypto.randomUUID();
-            const refreshToken = jwt.sign({ adminId: admin.id }, refreshSecret, { expiresIn: '7d', jwtid: refreshTokenId });
+            const refreshToken = jwt.sign({ adminId: admin.id, role: admin.role }, refreshSecret, { expiresIn: '7d', jwtid: refreshTokenId });
 
             const refreshTokenDAO = new RefreshTokenDAO();
             const refreshExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
@@ -109,11 +111,11 @@ export class AdminController {
             }
 
             if (!process.env.JWT_ACCESS_SECRET) throw new Error('JWT access secret is not configured');
-            const newAccessToken = jwt.sign({ adminId }, process.env.JWT_ACCESS_SECRET, { expiresIn: '5m' });
+            const newAccessToken = jwt.sign({ adminId, role: payload.role }, process.env.JWT_ACCESS_SECRET, { expiresIn: '5m' });
 
             await refreshTokenDAO.deleteByToken(refreshToken);
             const newRefreshTokenId = crypto.randomUUID();
-            const newRefreshToken = jwt.sign({ adminId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d', jwtid: newRefreshTokenId });
+            const newRefreshToken = jwt.sign({ adminId, role: payload.role }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d', jwtid: newRefreshTokenId });
             const newRefreshExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
             await refreshTokenDAO.create(newRefreshTokenId, newRefreshToken, adminId, newRefreshExpiresAt);
         
@@ -138,6 +140,59 @@ export class AdminController {
         } catch (error: any) {
             console.error('Error during logout:', error);
             res.status(500).json({ error: error.message || 'Error during logout' });
+        }
+    }
+
+    public async update(req: AuthRequest, res: Response) {
+        try {
+            const authenticatedAdminId = req.admin?.adminId;
+            const targetAdminId = req.params.id;
+
+            if (!authenticatedAdminId || typeof targetAdminId !== 'string') {
+                return res.status(401).json({ error: 'Invalid authenticated admin' });
+            }
+
+            const isSelfUpdate = authenticatedAdminId === targetAdminId;
+            const isSuperAdmin = req.admin?.role === AdminRole.SUPER_ADMIN;
+            const adminUpdateDTO = plainToInstance(AdminUpdateDTO, req.body);
+            const errors = await validate(adminUpdateDTO);
+            const requestedFields = Object.keys(req.body);
+
+            if (errors.length > 0 || requestedFields.length === 0) {
+                return res.status(400).json({ errors });
+            }
+
+            const selfAllowedFields = ['name', 'password'];
+            const superAdminAllowedFields = ['name', 'email', 'role', 'active'];
+            if (isSelfUpdate && isSuperAdmin) {
+                superAdminAllowedFields.push('password');
+            }
+
+            const allowedFields = isSuperAdmin ? superAdminAllowedFields : selfAllowedFields;
+            const unauthorizedField = requestedFields.find((field) => !allowedFields.includes(field));
+            if (unauthorizedField || (!isSelfUpdate && !isSuperAdmin)) {
+                return res.status(403).json({
+                    error: 'You are not allowed to update the requested admin data'
+                });
+            }
+
+            const targetAdmin = await this.adminService.searchById(targetAdminId);
+            if (!targetAdmin) {
+                return res.status(404).json({ error: 'Admin not found' });
+            }
+
+            const updateData = Object.fromEntries(
+                requestedFields.map((field) => [field, adminUpdateDTO[field as keyof AdminUpdateDTO]])
+            );
+            await this.adminService.update(targetAdminId, updateData);
+
+            return res.status(200).json({ message: 'Admin updated successfully' });
+        } catch (error: any) {
+            if (error.message === 'Email already registered') {
+                return res.status(409).json({ error: error.message });
+            }
+            console.error('Error updating admin:', error);
+            return res.status(500).json({ error: error.message || 'Error updating admin' });
         }
     }
 

@@ -1,9 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { AdminRole } from './src/model/admin';
 
 
-interface AuthRequest extends Request {
-    user?: any;
+export interface AuthRequest extends Request {
+    admin?: jwt.JwtPayload & {
+        adminId?: string;
+        role?: AdminRole;
+    };
 }
 
 export function authToken(req: AuthRequest, res: Response, next: NextFunction): void {
@@ -38,7 +42,7 @@ export function authToken(req: AuthRequest, res: Response, next: NextFunction): 
         }
 
         // Verificar o token JWT
-        jwt.verify(token, accessSecret, (err: jwt.VerifyErrors | null, user: any) => {
+        jwt.verify(token, accessSecret, (err: jwt.VerifyErrors | null, admin: string | jwt.JwtPayload | undefined) => {
             if (err) {
                 if (err instanceof jwt.TokenExpiredError) {
                     res.status(401).json({ error: 'Token has expired' });
@@ -52,7 +56,12 @@ export function authToken(req: AuthRequest, res: Response, next: NextFunction): 
                 return;
             }
 
-            req.user = user;
+            if (!admin || typeof admin === 'string') {
+                res.status(401).json({ error: 'Invalid token payload' });
+                return;
+            }
+
+            req.admin = admin;
             next();
         });
     } catch (error) {
@@ -61,3 +70,17 @@ export function authToken(req: AuthRequest, res: Response, next: NextFunction): 
 }
 
 export default authToken;
+
+export function isSuperAdmin(req: AuthRequest, res: Response, next: NextFunction): void {
+    if (!req.admin) {
+        res.status(401).json({ error: 'Authentication is required' });
+        return;
+    }
+
+    if (req.admin.role !== AdminRole.SUPER_ADMIN) {
+        res.status(403).json({ error: 'SUPER_ADMIN role is required' });
+        return;
+    }
+
+    next();
+}
