@@ -3,7 +3,7 @@ create table `administrators` (
     `name` varchar(255) not null,
     `email` varchar(320) not null,
     `hashPassword` varchar(255) not null,
-    `role` varchar(50) not null,
+    `role` enum('normal', 'master') not null,
     `active` boolean not null,
     `createdAt` date not null,
     `profile_picture` varchar(2048) default null,
@@ -49,15 +49,15 @@ create table `businessInfo` (
     primary key (`id`)
 )engine = InnoDB default CHARSET = utf8mb4 collate = utf8mb4_general_ci;
 
-create table `message` (
+create table `messages` (
     `id` char(36) not null,
     `name` varchar(255) not null,
     `email` varchar(320) not null,
     `phone` varchar(20) default null,
     `subject` enum('doubt', 'suggestion', 'complaint', 'partnership', 'other') not null,
     `message` varchar(1500) not null,
-    `submitDate` date not null,
-    `submitTime` time not null,
+    `submitDate` timestamp not null,
+    `submitTime` timestamp not null,
     primary key (`id`)
 )engine = InnoDB default CHARSET = utf8mb4 collate = utf8mb4_general_ci;
 

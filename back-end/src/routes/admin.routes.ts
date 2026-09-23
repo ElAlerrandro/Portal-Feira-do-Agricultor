@@ -1,8 +1,10 @@
+import authToken, { requireMaster }  from "../../middleware";
 import { Router } from "express";
 import { AdminController } from "../controller/admin.controller";
 import { AdminService } from "../service/admin.service";
 import { AdminDAO } from "../dao/admin.dao";
 import authToken from "../../middleware";
+
 
 const adminRoutes = Router();
 const adminDAO = new AdminDAO();

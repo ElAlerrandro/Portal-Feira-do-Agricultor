@@ -1,5 +1,5 @@
 import { AdminDAO } from "../dao/admin.dao";
-import { AdminCreateDTO } from "../dto/admin.dto";
+import { AdminCreateDTO, UpdateOwnProfileDTO, UpdateAdminByMasterDTO } from "../dto/admin.dto";
 import { Admin } from "../model/admin";
 import { PasswordCrypto } from './passwordCrypto';
 import { AdminUpdateData } from '../dao/admin.dao';
