@@ -41,7 +41,7 @@ export class AdminDAO {
 
     public async updateById(id: string, admin: Admin): Promise<void> {
         try {
-            const [result]: any = await connection.query(
+            await connection.query(
                 'UPDATE administrators SET name = ?, email = ?, hashPassword = ?, role = ?, active = ? WHERE id = ?',
                 [admin.name, admin.email, admin.password, admin.role, admin.active, id]
             );
