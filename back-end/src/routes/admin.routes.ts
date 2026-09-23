@@ -3,6 +3,7 @@ import { Router } from "express";
 import { AdminController } from "../controller/admin.controller";
 import { AdminService } from "../service/admin.service";
 import { AdminDAO } from "../dao/admin.dao";
+import authToken from "../../middleware";
 
 
 const adminRoutes = Router();
@@ -14,9 +15,20 @@ adminRoutes
     .route('/register')
     .post(async (req, res) => adminController.register(req,res))
 
-adminRoutes.route('/admin/profile')
-    .put(authToken, async (req, res) => adminController.updateOwnProfile(req,res));
+adminRoutes
+    .route('/login')
+    .post(async (req, res) => adminController.login(req,res))
 
-adminRoutes.route('/admin/:id')
-    .put(authToken, requireMaster, async (req, res) => adminController.updateAdminByMaster(req,res));
+adminRoutes
+    .route('/logout')
+    .post(async (req, res) => adminController.logout(req,res))
+
+adminRoutes
+    .route('/refresh')
+    .post(async (req, res) => adminController.refresh(req,res))
+
+adminRoutes
+    .route('/:id')
+    .patch(authToken, async (req, res) => adminController.update(req, res))
+
 export default adminRoutes;

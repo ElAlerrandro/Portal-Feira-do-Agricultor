@@ -1,87 +1,86 @@
-import {Request, Response, NextFunction} from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import 'dotenv/config';
-import {administratorRole} from './src/enums/administrator-role.enum'
+import { AdminRole } from './src/model/admin';
 
-interface AuthRequest extends Request {
-    user?: any
+
+export interface AuthRequest extends Request {
+    admin?: jwt.JwtPayload & {
+        adminId?: string;
+        role?: AdminRole;
+    };
 }
 
-export function authToken(req: AuthRequest, res: Response, next: NextFunction) {
+export function authToken(req: AuthRequest, res: Response, next: NextFunction): void {
     try {
         const authHeader = req.headers['authorization'];
 
+        // Validar se o header de autorização existe
         if (!authHeader) {
-            res.status(401).json({ error: 'Authorization on header is missing' });
+            res.status(401).json({ error: 'Authorization header is missing' });
             return;
         }
 
+        // Extrair o token (formato: "Bearer <token>")
         const parts = authHeader.split(' ');
         if (parts.length !== 2 || parts[0] !== 'Bearer') {
-            res.status(401).json({ error: 'Invalid aut horization format. Use: Bearer <token>' });
+            res.status(401).json({ error: 'Invalid authorization format. Use: Bearer <token>' });
             return;
         }
 
-        const token = parts[1]
+        const token = parts[1];
 
         if (!token) {
-            res.status(401).json({ error: 'Token is missing'});
+            res.status(401).json({ error: 'Token is missing' });
             return;
         }
 
-        jwt.verify(token, process.env.JWT_SECRET as string, (err: jwt.VerifyErrors | null, user: any) => {
+        const accessSecret = process.env.JWT_ACCESS_SECRET;
+
+        if (!accessSecret) {
+            res.status(500).json({ error: 'JWT access secret is not configured' });
+            return;
+        }
+
+        // Verificar o token JWT
+        jwt.verify(token, accessSecret, (err: jwt.VerifyErrors | null, admin: string | jwt.JwtPayload | undefined) => {
             if (err) {
                 if (err instanceof jwt.TokenExpiredError) {
-                    res.status(401).json({error: 'Token has expired'});
+                    res.status(401).json({ error: 'Token has expired' });
                     return;
                 }
                 if (err instanceof jwt.JsonWebTokenError) {
-                    res.status(401).json({ error: 'Invalid token'});
+                    res.status(401).json({ error: 'Invalid token' });
                     return;
                 }
-                res.status(401).json({ error: 'Token verification failed' })
+                res.status(401).json({ error: 'Token verification failed' });
                 return;
             }
-            req.user = user;
+
+            if (!admin || typeof admin === 'string') {
+                res.status(401).json({ error: 'Invalid token payload' });
+                return;
+            }
+
+            req.admin = admin;
             next();
-        }) } catch (error) {
-                res.status(500).json({ error: 'Internal server error during authorization' });
-    }
-}
-
-export function requireAdmin(req: AuthRequest, res: Response, next: NextFunction): void {
-    try {
-        if (req.user == undefined) {
-            res.status(401).json({ error: 'User is not authenticated' });
-            return;
-        }
-
-        if (req.user.role !== administratorRole.Normal && req.user.role !== administratorRole.Master) {
-            res.status(403).json({ error: 'Access denied. Admin role requiered' });
-            return;
-        }
-        next();
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error during authorization' })
-    }
-}
-
-export function requireMaster(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-        if (req.user == undefined) {
-            res.status(401).json({ error: 'User is not authenticated' });
-            return;
-        }
-
-        if (req.user.role !== administratorRole.Master) {
-            res.status(403).json({ error: 'Access denied. Admin role requiered' });
-            return;
-        }
-        next();
-    } catch (error) {
-        res.status(500).json({ error: 'Internal server error during authorization' })
+    res.status(500).json({ error: 'Internal server error during authentication' });
     }
 }
 
 export default authToken;
 
+export function isSuperAdmin(req: AuthRequest, res: Response, next: NextFunction): void {
+    if (!req.admin) {
+        res.status(401).json({ error: 'Authentication is required' });
+        return;
+    }
+
+    if (req.admin.role !== AdminRole.SUPER_ADMIN) {
+        res.status(403).json({ error: 'SUPER_ADMIN role is required' });
+        return;
+    }
+
+    next();
+}

@@ -6,6 +6,7 @@ create table `administrators` (
     `role` enum('normal', 'master') not null,
     `active` boolean not null,
     `createdAt` date not null,
+    `profile_picture` varchar(2048) default null,
     primary key (`id`),
     unique key `administrators_unique` (`email`)
 )engine = InnoDB default CHARSET = utf8mb4 collate = utf8mb4_general_ci;
@@ -60,13 +61,13 @@ create table `messages` (
     primary key (`id`)
 )engine = InnoDB default CHARSET = utf8mb4 collate = utf8mb4_general_ci;
 
-create table `refreshTokens` (
+create table `refresh_tokens` (
     `id` char(36) not null,
     `adminId` char(36) not null,
-    `tokenHash` varchar(255) not null,
-    `createdAt` timestamp not null,
-    `expiresAt` timestamp not null,
-    `revokedAt` timestamp default null,
+    `tokenHash` varchar(281) not null,
+    `createdAt` date not null,
+    `expiresAt` date not null,
+    `revokedAt` date default null,
     primary key (`id`),
     key `refreshTokens_administrators_FK` (`adminId`),
     constraint `refreshTokens_administrators_FK` foreign key (`adminId`) references `administrators` (`id`)

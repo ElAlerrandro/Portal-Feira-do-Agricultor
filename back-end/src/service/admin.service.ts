@@ -2,12 +2,21 @@ import { AdminDAO } from "../dao/admin.dao";
 import { AdminCreateDTO, UpdateOwnProfileDTO, UpdateAdminByMasterDTO } from "../dto/admin.dto";
 import { Admin } from "../model/admin";
 import { PasswordCrypto } from './passwordCrypto';
+import { AdminUpdateData } from '../dao/admin.dao';
 
 export class AdminService {
     public constructor(private adminDAO: AdminDAO) {}
 
     public async register(adminCreateDTO: AdminCreateDTO) {
         try {
+            if (!adminCreateDTO.name || !adminCreateDTO.email || !adminCreateDTO.password || !adminCreateDTO.role) {
+                throw new Error('Missing required fields');
+            }
+
+            if (await this.searchByEmail(adminCreateDTO.email)) {
+                throw new Error('Email already registered');
+            }
+
             adminCreateDTO.password = await PasswordCrypto.hashPassword(adminCreateDTO.password);
             const admin = Admin.construct(adminCreateDTO);
 
@@ -17,65 +26,31 @@ export class AdminService {
         }
     }
 
-    public async updateOwnProfile(id: string, updateOwnProfileDTO: UpdateOwnProfileDTO) {
-        try {
-            const admin = await this.adminDAO.findById(id);
-            if (!admin) {
-                throw new Error('Admin not found');
-            }
-
-            const name = updateOwnProfileDTO.name !== undefined
-            ? updateOwnProfileDTO.name : admin.name
-
-            const password = updateOwnProfileDTO.password !== undefined
-            ? await PasswordCrypto.hashPassword(updateOwnProfileDTO.password) : admin.password
-
-            const updatedAdmin = Admin.reconstruct({
-                id: admin.id,
-                name,
-                email: admin.email,
-                password,
-                role: admin.role,
-                active: admin.active,
-                createdAt: admin.createdAt
-            });
-            await this.adminDAO.updateById(id, updatedAdmin);
-        } catch (error: any) {
-            throw new Error('Error updating own profile: ' + error.message);
+    public async searchByEmail(email: string): Promise <Admin | null> {
+        const admin: Admin | null = await this.adminDAO.searchByEmail(email);
+        if (admin) {
+            return Admin.reconstruct(admin);
         }
+        return null;
     }
 
-    public async updateAdminByMaster(id: string, updateAdminByMasterDTO: UpdateAdminByMasterDTO) {
-        try {
-            const admin = await this.adminDAO.findById(id);
-            if (!admin) {
-                throw new Error('Admin not found');
+    public async searchById(id: string): Promise<Admin | null> {
+        const admin = await this.adminDAO.searchById(id);
+        return admin ? Admin.reconstruct(admin) : null;
+    }
+
+    public async update(id: string, data: AdminUpdateData): Promise<void> {
+        if (data.email !== undefined) {
+            const adminWithEmail = await this.searchByEmail(data.email);
+            if (adminWithEmail && adminWithEmail.id !== id) {
+                throw new Error('Email already registered');
             }
-
-            const name = updateAdminByMasterDTO.name !== undefined
-            ? updateAdminByMasterDTO.name : admin.name
-
-            const email = updateAdminByMasterDTO.email !== undefined
-            ? updateAdminByMasterDTO.email : admin.email
-
-            const role = updateAdminByMasterDTO.role !== undefined
-            ? updateAdminByMasterDTO.role : admin.role
-            
-            const active = updateAdminByMasterDTO.active !== undefined
-            ? updateAdminByMasterDTO.active : admin.active
-            
-            const updatedAdmin = Admin.reconstruct({
-                id: admin.id,
-                name,
-                email,
-                password: admin.password,
-                role,
-                active,
-                createdAt: admin.createdAt
-            });
-            await this.adminDAO.updateById(id, updatedAdmin);
-        } catch (error: any) {
-            throw new Error('Error updating admin by master: ' + error.message);
         }
+
+        if (data.password !== undefined) {
+            data.password = await PasswordCrypto.hashPassword(data.password);
+        }
+
+        await this.adminDAO.update(id, data);
     }
 }
