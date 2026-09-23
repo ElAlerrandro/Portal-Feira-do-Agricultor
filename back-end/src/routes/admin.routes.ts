@@ -16,4 +16,12 @@ adminRoutes
     .route('/login')
     .post(async (req, res) => adminController.login(req,res))
 
+adminRoutes
+    .route('/logout')
+    .post(async (req, res) => adminController.logout(req,res))
+
+adminRoutes
+    .route('/refresh')
+    .post(async (req, res) => adminController.refresh(req,res))
+
 export default adminRoutes;

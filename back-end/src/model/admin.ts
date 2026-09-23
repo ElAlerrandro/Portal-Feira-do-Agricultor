@@ -1,11 +1,16 @@
 import { AdminCreateDTO } from "../dto/admin.dto";
 
+export enum AdminRole {
+    SUPER_ADMIN = 'SUPER_ADMIN',
+    ADMIN = 'ADMIN'
+}
+
 export type propsAdmin = {
     id: string;
     name: string;
     email: string;
     password: string;
-    role: string;//temporario, posteriormente alterar para ENUM
+    role: AdminRole;
     active: boolean;
     createdAt: Date;
 }
@@ -19,7 +24,7 @@ export class Admin {
             name,
             email,
             password,
-            role,
+            role: role as AdminRole,
             active: true,
             createdAt: new Date()
         }

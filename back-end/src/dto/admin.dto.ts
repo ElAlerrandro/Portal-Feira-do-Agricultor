@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString, IsEmail } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, IsEnum } from 'class-validator';
+import { AdminRole } from '../model/admin';
 
 export class AdminCreateDTO {
     @IsNotEmpty()
@@ -14,8 +15,8 @@ export class AdminCreateDTO {
     password: string;
 
     @IsNotEmpty()
-    @IsString()//Trocar para ENUM posteriormente
-    role: string;
+    @IsEnum(AdminRole)
+    role: AdminRole;
 }
 
 export class AdminLoginDTO {

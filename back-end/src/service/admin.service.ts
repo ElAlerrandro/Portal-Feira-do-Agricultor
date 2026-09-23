@@ -8,6 +8,14 @@ export class AdminService {
 
     public async register(adminCreateDTO: AdminCreateDTO) {
         try {
+            if (!adminCreateDTO.name || !adminCreateDTO.email || !adminCreateDTO.password || !adminCreateDTO.role) {
+                throw new Error('Missing required fields');
+            }
+
+            if (await this.searchByEmail(adminCreateDTO.email)) {
+                throw new Error('Email already registered');
+            }
+
             adminCreateDTO.password = await PasswordCrypto.hashPassword(adminCreateDTO.password);
             const admin = Admin.construct(adminCreateDTO);
 

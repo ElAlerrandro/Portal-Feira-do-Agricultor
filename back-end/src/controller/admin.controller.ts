@@ -31,8 +31,6 @@ export class AdminController {
                 return res.status(400).json({errors});
             }
 
-            //Adiconar depois verificar se o email existe no banco de dados
-
             await this.adminService.register(adminCreateDTO);
             return res.status(201).json({message: 'Admin registered successfully'});
         } catch (error: any) {
