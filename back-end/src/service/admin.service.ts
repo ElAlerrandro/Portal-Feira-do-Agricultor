@@ -1,5 +1,5 @@
 import { AdminDAO } from "../dao/admin.dao";
-import { AdminCreateDTO, UpdateOwnProfileDTO, UpdateAdminByMasterDTO } from "../dto/admin.dto";
+import { AdminCreateDTO } from "../dto/admin.dto";
 import { Admin } from "../model/admin";
 import { PasswordCrypto } from './passwordCrypto';
 import { AdminUpdateData } from '../dao/admin.dao';
@@ -24,6 +24,18 @@ export class AdminService {
         } catch (error: any) {
             throw new Error('Error registering admin: ' + error.message);
         }
+    }
+
+    public async delete(id: string): Promise<void> {
+        const admin = await this.searchById(id);
+        if (!admin) {
+            throw new Error('Admin not found');
+        }
+
+        if (admin.role === 'SUPER_ADMIN') {
+            throw new Error('Cannot delete SUPER_ADMIN');
+        }
+        await this.adminDAO.delete(id);
     }
 
     public async searchByEmail(email: string): Promise <Admin | null> {

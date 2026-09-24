@@ -89,4 +89,12 @@ export class AdminDAO {
             throw new Error('Error updating admin: ' + error.message);
         }
     }
+
+    async delete(id: string): Promise<void> {
+        try {
+            await connection.query('DELETE FROM administrators WHERE id = ?', [id]);
+        } catch (error: any) {
+            throw new Error('Error deleting admin: ' + error.message);
+        }
+    }
 }

@@ -40,41 +40,6 @@ export class AdminController {
         }
     }
 
-    public async updateOwnProfile(req: AuthRequest, res: Response) {
-        try {
-            const id = req.user.id
-            const updateOwnProfileDTO = plainToInstance(UpdateOwnProfileDTO, req.body)
-            const errors = await validate(updateOwnProfileDTO);
-
-            if (errors.length > 0) {
-                return res.status(400).json({errors});
-            }
-
-            await this.adminService.updateOwnProfile(id, updateOwnProfileDTO);
-            return res.status(200).json({message: 'Profile updated successfully'});
-        } catch (error: any) {
-            return res.status(500).json({error: 'Error updating own profile'});
-        }
-    }
-
-    public async updateAdminByMaster(req: AuthRequest, res: Response) {
-        try {
-            const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
-
-            const updateAdminByMasterDTO = plainToInstance (UpdateAdminByMasterDTO, req.body);
-            const errors = await validate(updateAdminByMasterDTO);
-
-            if (errors.length > 0) {
-                return res.status(400).json({errors});
-            }
-
-            await this.adminService.updateAdminByMaster(id, updateAdminByMasterDTO);
-            return res.status(200).json({message: 'Admin updated successfully'});
-        } catch (error: any) {
-            res.status(500).json({error: 'Error updating admin by master'})
-        }
-    }
-
     public async login(req: Request, res: Response) {
         try{
             const adminLoginDTO = plainToInstance(AdminLoginDTO, req.body);
@@ -187,6 +152,7 @@ export class AdminController {
                 return res.status(401).json({ error: 'Invalid authenticated admin' });
             }
 
+            //Verificação interna para não criar duas rotas diferentes, uma para super admin e outra para self update, já que a rota é a mesma, apenas o comportamento muda de acordo com o tipo de usuário.
             const isSelfUpdate = authenticatedAdminId === targetAdminId;
             const isSuperAdmin = req.admin?.role === AdminRole.SUPER_ADMIN;
             const adminUpdateDTO = plainToInstance(AdminUpdateDTO, req.body);
@@ -228,6 +194,20 @@ export class AdminController {
             }
             console.error('Error updating admin:', error);
             return res.status(500).json({ error: error.message || 'Error updating admin' });
+        }
+    }
+
+    public async delete(req: Request, res: Response) {
+        try {
+            const targetAdminId = req.params.id;
+            if (typeof targetAdminId !== 'string') {
+                return res.status(400).json({ error: 'Invalid admin id' });
+            }
+            await this.adminService.delete(targetAdminId);
+            return res.status(200).json({ message: 'Admin deleted successfully' });
+        } catch (error: any) {
+            console.error('Error deleting admin:', error);
+            return res.status(500).json({ error: error.message || 'Error deleting admin' });
         }
     }
 

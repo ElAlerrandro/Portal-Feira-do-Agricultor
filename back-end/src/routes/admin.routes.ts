@@ -2,7 +2,7 @@ import { Router } from "express";
 import { AdminController } from "../controller/admin.controller";
 import { AdminService } from "../service/admin.service";
 import { AdminDAO } from "../dao/admin.dao";
-import authToken from "../../middleware";
+import authToken, { isSuperAdmin } from "../../middleware";
 
 
 const adminRoutes = Router();
@@ -12,6 +12,10 @@ const adminController = new AdminController(adminService);
 
 adminRoutes
     .route('/register')
+    .post(authToken, isSuperAdmin, async (req, res) => adminController.register(req,res))
+
+    adminRoutes//rota para forcar o registro de um admin, somente para fins de desenvolvimento
+    .route('/register/force')
     .post(async (req, res) => adminController.register(req,res))
 
 adminRoutes
@@ -29,5 +33,6 @@ adminRoutes
 adminRoutes
     .route('/:id')
     .patch(authToken, async (req, res) => adminController.update(req, res))
+    .delete(authToken, isSuperAdmin, async (req, res) => adminController.delete(req, res))
 
 export default adminRoutes;
