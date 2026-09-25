@@ -21,7 +21,7 @@ create table `events` (
     `localAddress` varchar(255) not null,
     `localLatitude` decimal(10,8) not null,
     `localLongitude` decimal(11,8) not null,
-    `state` enum('PENDING', 'CANCELED', 'CONCLUDED', 'RESCHEDULED', 'HAPPENING' ) not null,
+    `state` enum('PENDING', 'CANCELED', 'CONCLUDED', 'RESCHEDULED', 'HAPPENING') not null,
     `bannerImage` varchar(2048) default null,
     `createdAt` date not null,
     `administratorId` char(36) not null,

@@ -5,32 +5,32 @@ import { Event } from '../model/event'
 export class EventService {
     public constructor(private eventDAO: EventDAO) {}
 
-    public async create(dto: EventCreateDTO, adminId: string): Promise<void> {
+    public async create(eventCreateDTO: EventCreateDTO): Promise<void> {
         try {
-            if (dto.startAt >= dto.endAt) {
+            if (eventCreateDTO.startAt >= eventCreateDTO.endAt) {
                 throw new Error('startAt must be before endAt');
             }
 
-            const event = Event.construct(dto, adminId);
+            const event = Event.construct(eventCreateDTO);
             await this.eventDAO.create(event)
         } catch (error: any) {
             throw new Error('Error creating Event: ' + error.message);
         }
     }
 
-    public async update(id: string, dto: EventUpdateDTO): Promise<void> {
+    public async update(id: string, eventUpdateDTO: EventUpdateDTO): Promise<void> {
         const event = await this.eventDAO.searchById(id)
         if (!event) {
             throw new Error('Event not Found')
         }
 
-        const startAt = dto.startAt ?? event.startAt;
-        const endAt = dto.endAt ?? event.endAt;
+        const startAt = eventUpdateDTO.startAt ?? event.startAt;
+        const endAt = eventUpdateDTO.endAt ?? event.endAt;
         if (startAt >= endAt) {
             throw new Error('startAt must be before endAt')
         }
 
-        const data: EventUpdateData = { ...dto};
+        const data: EventUpdateData = { ...eventUpdateDTO};
         await this.eventDAO.update(id, data)
     }
 

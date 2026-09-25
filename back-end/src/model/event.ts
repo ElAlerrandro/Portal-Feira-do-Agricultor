@@ -27,21 +27,21 @@ export type propsEvent = {
 export class Event {
     constructor(private props: propsEvent) {}
 
-    public static construct(dto: EventCreateDTO, adminId: string) {
+    public static construct(eventCreateDTO: EventCreateDTO) {
         const props: propsEvent = {
             id: crypto.randomUUID(),
-            title: dto.title,
-            date: dto.date,
-            description: dto.description,
-            startAt: dto.startAt,
-            endAt: dto.endAt,
-            localAddress: dto.localAddress,
-            latitude: dto.latitude,
-            longitude: dto.longitude,
-            state: EventState.PENDING,
-            bannerImage: dto.bannerImage,
+            title: eventCreateDTO.title,
+            date: eventCreateDTO.date,
+            description: eventCreateDTO.description ?? '',
+            startAt: eventCreateDTO.startAt,
+            endAt: eventCreateDTO.endAt,
+            localAddress: eventCreateDTO.localAddress,
+            latitude: eventCreateDTO.latitude,
+            longitude: eventCreateDTO.longitude,
+            state: (eventCreateDTO.state as EventState) ?? EventState.PENDING, //ao criar o evento o admin pode escolher o estado, se não alterar por padão fica com pendente
+            bannerImage: eventCreateDTO.bannerImage,
             createdAt: new Date(),
-            adminId
+            adminId: eventCreateDTO.adminId
         }
         return new Event(props)
     }

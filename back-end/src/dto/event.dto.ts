@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsEnum, IsOptional, IsBoolean, IsDate, IsMilitaryTime, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsEnum, IsOptional, IsDateString, IsMilitaryTime, IsNumber } from 'class-validator';
 import { EventState } from '../model/event';
 
 export class EventCreateDTO {
@@ -7,12 +7,12 @@ export class EventCreateDTO {
     title: string;
 
     @IsNotEmpty()
-    @IsDate()
+    @IsDateString()
     date: Date;
 
     @IsOptional()
     @IsString()
-    description: string;
+    description?: string;
 
     @IsNotEmpty()
     @IsMilitaryTime()
@@ -35,12 +35,19 @@ export class EventCreateDTO {
     longitude?: number;
 
     @IsOptional()
+    @IsEnum(EventState)
+    state?: string
+
+    @IsOptional()
     @IsString()
     bannerImage?: string;
+
+    @IsNotEmpty()
+    @IsString()
+    adminId: string
 }
 
-//Tirei o id do administradot pois qualquer um poderia criar um evento em nome de outro admin safadinho
-//ou seja vai ser definido pelo token de quem está autenticando.... e vai se criando um clima gostoso
+//O id ja vai ser definido automaticamente, tirar ele do DTO so torma o codigo mais complexo de ler
 
 export class EventUpdateDTO {
     @IsOptional()

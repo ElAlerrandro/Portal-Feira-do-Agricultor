@@ -10,7 +10,7 @@ export type AdminUpdateData = {
 };
 
 export class AdminDAO {
-    public async register(admin: Admin): Promise<void> {//Alterar quando criar o banco de dados, para ficar de acordo com a tabela
+    public async register(admin: Admin): Promise<void> {
         try {
             const [result]: any = await connection.query(
                 'INSERT INTO administrators (id, name, email, hashPassword, role, active, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',

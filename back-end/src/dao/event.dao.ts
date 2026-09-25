@@ -17,7 +17,7 @@ export type EventUpdateData = {
 export class EventDAO {
     public async create(event: Event): Promise <void> {
         try {
-            await connection.query('INSERT INTO events (id, title, date, description, startAt, endAt, localAddress, localLatitude, localLongitude, state, bannerImage, createAt, administatorId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ', [
+            await connection.query('INSERT INTO events (id, title, date, description, startAt, endAt, localAddress, localLatitude, localLongitude, state, bannerImage, createdAt, administratorId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ', [
                 event.id,
                 event.title,
                 event.date,
@@ -103,7 +103,7 @@ export class EventDAO {
         }
 
         try {
-            await connection.query(`UPDATE events SET ${fields.join(', ')} WHERE id = ?', [...values, id]`);
+            await connection.query(`UPDATE events SET ${fields.join(', ')} WHERE id = ?`,[...values, id]);
         } catch (error: any) {
             throw new Error('Error updating event: ' + error.message)
         }
