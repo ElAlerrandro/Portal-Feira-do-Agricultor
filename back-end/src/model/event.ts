@@ -13,13 +13,13 @@ export type propsEvent = {
     title: string;
     date: Date;
     description: string;
-    startTime: string;
-    endTime: string;
-    location: string;
+    startAt: string;
+    endAt: string;
+    localAddress: string;
     latitude?: number;
     longitude?: number;
     state: EventState;
-    image?: string;
+    bannerImage?: string;
     createdAt: Date;
     adminId: string;
 }
@@ -27,22 +27,23 @@ export type propsEvent = {
 export class Event {
     constructor(private props: propsEvent) {}
 
-    public static construct({title, date, description, startTime, endTime, location, latitude, longitude, state, image, adminId}: EventCreateDTO) {
+    public static construct(dto: EventCreateDTO, adminId: string) {
         const props: propsEvent = {
             id: crypto.randomUUID(),
-            title,
-            date,
-            description,
-            startTime,
-            endTime,
-            location,
-            latitude,
-            longitude,
-            state: state as EventState,
-            image,
+            title: dto.title,
+            date: dto.date,
+            description: dto.description,
+            startAt: dto.startAt,
+            endAt: dto.endAt,
+            localAddress: dto.localAddress,
+            latitude: dto.latitude,
+            longitude: dto.longitude,
+            state: EventState.PENDING,
+            bannerImage: dto.bannerImage,
             createdAt: new Date(),
             adminId
         }
+        return new Event(props)
     }
 
     public static reconstruct(props: propsEvent) {
@@ -65,16 +66,16 @@ export class Event {
         return this.props.description;
     }
 
-    public get startTime () {
-        return this.props.startTime;
+    public get startAt () {
+        return this.props.startAt;
     }
 
-    public get endTime () {
-        return this.props.endTime;
+    public get endAt () {
+        return this.props.endAt;
     }
 
-    public get location () {
-        return this.props.location;
+    public get localAddress () {
+        return this.props.localAddress;
     }
 
     public get latitude () {
@@ -89,8 +90,8 @@ export class Event {
         return this.props.state;
     }
 
-    public get image () {
-        return this.props.image;
+    public get bannerImage () {
+        return this.props.bannerImage;
     }
 
     public get createdAt () {
