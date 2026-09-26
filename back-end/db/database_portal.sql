@@ -33,6 +33,7 @@ create table `events` (
 create table `images` (
     `id` char(36) not null,
     `imageUrl` varchar(2048) not null,
+    `description` varchar(1000) default null,
     `eventId` char(36) not null,
     primary key (`id`),
     key `images_events_FK` (`eventId`),
